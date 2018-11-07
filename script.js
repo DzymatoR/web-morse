@@ -53,7 +53,7 @@ const slovnik = {
 
 // definice funkcí
 
-function PrelozTo(){
+function TxtToMorse(){
 
     let LowerCase = inputTxt.value.toLowerCase();
     outputTxt.value = "";
@@ -64,6 +64,12 @@ function PrelozTo(){
  }
 
 
+function MorseToTxt(){
+
+    let morseInput = inputTxt.split("/");
+    console.log(morseInput);
+}
+
 function Resetuj (){
     inputTxt.value = "";
     outputTxt.value = "";
@@ -71,7 +77,7 @@ function Resetuj (){
 
 // definice běhu aplikace
 
-preloz.addEventListener("click", PrelozTo);
+preloz.addEventListener("click", TxtToMorse);
 reset.addEventListener("click", Resetuj);
 
 
