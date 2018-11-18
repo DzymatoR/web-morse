@@ -69,7 +69,11 @@ const slovnik = {
 
 // definice funkcí
 
+<<<<<<< HEAD
 function ToMorse(){
+=======
+function TxtToMorse(){
+>>>>>>> dfa1ba2d513ea63a44d5dde0ee0cca87429239f1
 
     let LowerCase = inputTxt.value.toLowerCase();
     outputTxt.value = "";
@@ -79,12 +83,29 @@ function ToMorse(){
     }
  }
 
+<<<<<<< HEAD
+=======
+
+function MorseToTxt(){
+
+    let morseInput = inputTxt.split("/");
+    console.log(morseInput);
+}
+
+>>>>>>> dfa1ba2d513ea63a44d5dde0ee0cca87429239f1
 function Resetuj (){
     inputTxt.value = "";
     outputTxt.value = "";
 }
 
+<<<<<<< HEAD
 // // definice běhu aplikace
+=======
+// definice běhu aplikace
+
+preloz.addEventListener("click", TxtToMorse);
+reset.addEventListener("click", Resetuj);
+>>>>>>> dfa1ba2d513ea63a44d5dde0ee0cca87429239f1
 
 // preloz.addEventListener("click", ToMorse);
 
