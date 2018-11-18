@@ -48,33 +48,48 @@ const slovnik = {
     "9":"----.",
     "0":"-----",
     // speciální znaky
+    "?":"..--..",
+    ",":"--..--",
+    "!":"--...-",
+    ".":".-.-.-",
+    ";":"-.-.-.",
+    "/":"-..-.",
+    "=":"-...-",
+    "-":"-....-",
+    "'":".----.",
+    "(":"-.--.",
+    ")":"-.--.-",
+    "\"":".-..-.",
+    ":":"---...",
+    "_":"..--.-",
+    "+":".-.-.",
+    "@":".--.-.",
 }
 
 
 // definice funkcí
 
-function PrelozTo(){
+function ToMorse(){
 
     let LowerCase = inputTxt.value.toLowerCase();
     outputTxt.value = "";
-    
+       
     for (n=0; n<LowerCase.length; n++){
         outputTxt.value = outputTxt.value + slovnik[LowerCase[n]]+"/"; 
     }
  }
-
 
 function Resetuj (){
     inputTxt.value = "";
     outputTxt.value = "";
 }
 
-// definice běhu aplikace
+// // definice běhu aplikace
 
-preloz.addEventListener("click", PrelozTo);
+// preloz.addEventListener("click", ToMorse);
+
+inputTxt.addEventListener("keyup",ToMorse);
 reset.addEventListener("click", Resetuj);
-
-
 
 
 
