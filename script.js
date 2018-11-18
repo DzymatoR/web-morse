@@ -66,11 +66,9 @@ const slovnik = {
     "@":".--.-.",
 }
 
-
 // definice funkcí
 
 function ToMorse(){
-
     let LowerCase = inputTxt.value.toLowerCase();
     outputTxt.value = "";
        
