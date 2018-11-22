@@ -5,6 +5,7 @@ let inputTxt = document.querySelector("#inputTxt");
 let outputTxt = document.querySelector("#outputTxt");
 const preloz = document.querySelector("#translateButton");
 const reset = document.querySelector("#resetButton");
+const prekladZ = document.querySelector("#prekladZ");
 
 const slovnik = {
     // písmena
@@ -68,14 +69,30 @@ const slovnik = {
 
 // definice funkcí
 
-function ToMorse(){
+function prelozTo (){
+    
     let LowerCase = inputTxt.value.toLowerCase();
     outputTxt.value = "";
-       
-    for (n=0; n<LowerCase.length; n++){
-        outputTxt.value = outputTxt.value + slovnik[LowerCase[n]]+"/"; 
-    }
- }
+
+    test1 = /[./-]/gm.test(LowerCase);
+    test2 = /[a-zA-Z0-9]/gm.test(LowerCase);
+
+    if (test1 == true && test2 == false){
+            prekladZ.innerHTML = "MORSE"
+    } else {
+        prekladZ.innerHTML = "ABC";
+        for (n=0; n<LowerCase.length; n++){
+            outputTxt.value = outputTxt.value + slovnik[LowerCase[n]]+"/"; 
+            };
+    }    
+}
+
+// function ToMorse(){
+           
+//     for (n=0; n<LowerCase.length; n++){
+//         outputTxt.value = outputTxt.value + slovnik[LowerCase[n]]+"/"; 
+//     }
+//  }
 
 function Resetuj (){
     inputTxt.value = "";
@@ -86,7 +103,7 @@ function Resetuj (){
 
 // preloz.addEventListener("click", ToMorse);
 
-inputTxt.addEventListener("keyup",ToMorse);
+inputTxt.addEventListener("keyup",prelozTo);
 reset.addEventListener("click", Resetuj);
 
 
