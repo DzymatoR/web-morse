@@ -72,16 +72,8 @@ const slovnik = {
 function prelozTo (){
     
     let LowerCase = inputTxt.value.toLowerCase();
-<<<<<<< HEAD
     outputTxt.value = "";        
-    
-    for (n=0; n<LowerCase.length; n++){
-        outputTxt.value = outputTxt.value + slovnik[LowerCase[n]]+"/"; 
-    }
-}
-=======
-    outputTxt.value = "";
-
+  
     test1 = /[./-]/gm.test(LowerCase);
     test2 = /[a-zA-Z0-9]/gm.test(LowerCase);
 
@@ -101,7 +93,6 @@ function prelozTo (){
 //         outputTxt.value = outputTxt.value + slovnik[LowerCase[n]]+"/"; 
 //     }
 //  }
->>>>>>> 6040b07e1bce4f9993381fd16f330083443437d5
 
 function Resetuj (){
     inputTxt.value = "";
