@@ -70,12 +70,12 @@ const slovnik = {
 
 function ToMorse(){
     let LowerCase = inputTxt.value.toLowerCase();
-    outputTxt.value = "";
-       
+    outputTxt.value = "";        
+    
     for (n=0; n<LowerCase.length; n++){
         outputTxt.value = outputTxt.value + slovnik[LowerCase[n]]+"/"; 
     }
- }
+}
 
 function Resetuj (){
     inputTxt.value = "";
@@ -88,7 +88,3 @@ function Resetuj (){
 
 inputTxt.addEventListener("keyup",ToMorse);
 reset.addEventListener("click", Resetuj);
-
-
-
-
