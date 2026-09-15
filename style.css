@@ -1,32 +1,308 @@
-body {
-    text-align: center;
-    background-color: gray;
+/* ------------------------------------------------------------- proměnné */
+
+:root {
+    /* Koláž na pozadí. Chceš-li vlastní obrázek, stačí přepsat tenhle řádek
+       (např. url("assets/kolaz.jpg")) — zbytek stylu se přizpůsobí sám. */
+    --kolaz: url("assets/kolaz.webp");
+    --kolaz-sytost: 0.55;
+
+    --pozadi: #0a1420;
+    --pozadi-svetlejsi: #10202f;
+    --mosaz: #e8b661;
+    --mosaz-tlumena: #b8873f;
+    --papir: #f2e8d8;
+    --seda: #93a7ba;
+
+    --radius: 18px;
+    --mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Consolas, monospace;
+    --pismo: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+
+    color-scheme: dark;
 }
 
+/* ------------------------------------------------------------- základ */
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: clamp(20px, 5vw, 64px) clamp(16px, 4vw, 40px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+
+    font-family: var(--pismo);
+    color: var(--papir);
+    background-color: var(--pozadi);
+}
+
+/* vrstva 1 – koláž */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: var(--kolaz) center / cover no-repeat;
+    opacity: var(--kolaz-sytost);
+}
+
+/* vrstva 2 – ztmavení, aby text zůstal čitelný i přes obrázek */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(115% 85% at 50% 45%, rgba(10, 20, 32, 0.20) 0%,
+                                             rgba(10, 20, 32, 0.66) 52%,
+                                             rgba(4, 9, 16, 0.92) 100%),
+        linear-gradient(180deg, rgba(4, 9, 16, 0.42), rgba(4, 9, 16, 0.06) 32%);
+}
+
+/* ------------------------------------------------------------- karta */
+
+.karta {
+    width: min(920px, 100%);
+    padding: clamp(22px, 4vw, 42px);
+    border-radius: var(--radius);
+    border: 1px solid rgba(232, 182, 97, 0.26);
+    background: rgba(10, 20, 32, 0.74);
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.karta__hlavicka { text-align: center; margin-bottom: 28px; }
+
+.nadpisek {
+    margin: 0 0 10px;
+    font-family: var(--mono);
+    font-size: 17px;
+    letter-spacing: 0.4em;
+    color: var(--mosaz);
+}
+
+.karta__hlavicka h1 {
+    margin: 0 0 12px;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+}
+
+.podtitulek {
+    margin: 0 auto;
+    max-width: 52ch;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--seda);
+}
+
+/* ------------------------------------------------------------- panely */
+
+.panely {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.panel { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.panel__hlava {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.panel__popisek {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mosaz-tlumena);
+}
+
+.odznak {
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(232, 182, 97, 0.3);
+    background: rgba(232, 182, 97, 0.08);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--mosaz);
+    white-space: nowrap;
+}
 
 textarea {
-
-    padding: 10px;
-    margin: 10px;
-    width: 50%;
-
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(232, 182, 97, 0.2);
+    background: rgba(4, 10, 18, 0.66);
+    color: var(--papir);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.55;
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+textarea::placeholder { color: rgba(147, 167, 186, 0.55); }
 
-button {
-
-    padding: 10px;
-    margin: 10px;
-    background-color: red;
-    color: white;
-    border: none;
-
+textarea:focus-visible,
+.btn:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--mosaz);
+    outline-offset: 2px;
 }
 
-button:hover {
+textarea:focus { border-color: rgba(232, 182, 97, 0.5); }
 
-    background-color: brown;
-
+.je-morse {
+    font-family: var(--mono);
+    font-size: 17px;
+    letter-spacing: 0.06em;
+    color: var(--mosaz);
+    word-break: break-word;
 }
 
+/* ------------------------------------------------------------- hláška */
 
+.hlaska {
+    margin: 14px 2px 0;
+    min-height: 1.4em;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--seda);
+}
+
+.hlaska--varovani { color: #f0a58a; }
+
+/* ------------------------------------------------------------- tlačítka */
+
+.tlacitka {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.btn {
+    padding: 11px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(232, 182, 97, 0.34);
+    background: transparent;
+    color: var(--mosaz);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease,
+                color 0.15s ease, transform 0.1s ease;
+}
+
+.btn:hover { background: rgba(232, 182, 97, 0.12); border-color: var(--mosaz); }
+.btn:active { transform: translateY(1px); }
+
+.btn--hlavni {
+    border-color: transparent;
+    background: linear-gradient(180deg, #f0c47a, var(--mosaz));
+    color: #1a1005;
+    font-weight: 600;
+}
+
+.btn--hlavni:hover {
+    background: linear-gradient(180deg, #f7d190, #eec074);
+    border-color: transparent;
+}
+
+.btn--tichy { border-color: rgba(147, 167, 186, 0.28); color: var(--seda); }
+.btn--tichy:hover { background: rgba(147, 167, 186, 0.12); border-color: var(--seda); }
+
+/* ------------------------------------------------------------- přehled */
+
+.prehled {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(232, 182, 97, 0.16);
+}
+
+summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mosaz-tlumena);
+    border-radius: 6px;
+}
+
+summary:hover { color: var(--mosaz); }
+
+.tabulka {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: 6px;
+    margin-top: 16px;
+}
+
+.tabulka__radek {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(4, 10, 18, 0.5);
+}
+
+.tabulka__znak {
+    min-width: 2ch;
+    font-weight: 600;
+    color: var(--papir);
+}
+
+.tabulka__kod {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--mosaz);
+    letter-spacing: 0.06em;
+}
+
+/* ------------------------------------------------------------- patička */
+
+.paticka {
+    font-size: 12px;
+    color: rgba(147, 167, 186, 0.75);
+    text-align: center;
+}
+
+.paticka code {
+    white-space: nowrap;
+    font-family: var(--mono);
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(232, 182, 97, 0.12);
+    color: var(--mosaz);
+}
+
+/* ------------------------------------------------------------- mobil */
+
+@media (max-width: 640px) {
+    .panely { grid-template-columns: 1fr; }
+    .btn { flex: 1 1 auto; }
+
+    /* Koláž má záměrně prázdný střed, aby na ní šla číst karta. Na úzkém
+       displeji by ale výřez na střed padl celý — posuneme ho k motivům. */
+    body::before { background-position: 15% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+}

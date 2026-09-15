@@ -1,24 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Morseův překladač</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header><h1>Moderní Morseův překladač</h1></header>
+    <main class="karta">
+        <header class="karta__hlavicka">
+            <p class="nadpisek">·−· −−− ·−·· ·</p>
+            <h1>Morseův překladač</h1>
+            <p class="podtitulek">
+                Z textu do morseovky i zpátky. Pro táborníky, skauty, námořníky
+                a všechny, kdo potřebují poslat zprávu pípáním, blikáním nebo klepáním.
+            </p>
+        </header>
 
-    <textarea id="inputTxt" cols="20" rows="5" placeholder="Co se má přeložit?" value="ahoj"></textarea><br>
+        <div class="panely">
+            <section class="panel">
+                <label class="panel__popisek" for="inputTxt">Vstup</label>
+                <textarea id="inputTxt" rows="6" spellcheck="false"
+                          placeholder="Co se má přeložit?" autofocus></textarea>
+            </section>
 
-    <button id="translateButton">Přelož</button>
-    <button id="resetButton">Reset</button><br>
+            <section class="panel">
+                <div class="panel__hlava">
+                    <label class="panel__popisek" for="outputTxt">Výstup</label>
+                    <span id="smer" class="odznak">Text → Morseovka</span>
+                </div>
+                <textarea id="outputTxt" rows="6" readonly
+                          class="je-morse"
+                          placeholder="…tady se objeví překlad"></textarea>
+            </section>
+        </div>
 
-    <textarea id="outputTxt" cols="20" rows="5" placeholder="V lepším případě to zde bude přeloženo..."></textarea>
-    
+        <p id="hlaska" class="hlaska" role="status" aria-live="polite"></p>
+
+        <div class="tlacitka">
+            <button type="button" id="translateButton" class="btn btn--hlavni">Přelož</button>
+            <button type="button" id="swapButton" class="btn">Prohodit</button>
+            <button type="button" id="copyButton" class="btn">Kopírovat</button>
+            <button type="button" id="resetButton" class="btn btn--tichy">Reset</button>
+        </div>
+
+        <details class="prehled">
+            <summary>Přehled abecedy</summary>
+            <div id="tabulka" class="tabulka"></div>
+        </details>
+    </main>
+
+    <footer class="paticka">
+        Směr překladu se pozná sám podle vstupu · slova odděluje <code>/</code>
+    </footer>
 
     <script src="script.js"></script>
 </body>
 </html>
-
