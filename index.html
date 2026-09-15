@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Morseův překladač</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,19 +20,22 @@
 
         <div class="panely">
             <section class="panel">
-                <label class="panel__popisek" for="inputTxt">Vstup</label>
-                <textarea id="inputTxt" rows="6" spellcheck="false"
+                <div class="panel__hlava">
+                    <label class="panel__popisek" for="inputTxt">Vstup</label>
+                </div>
+                <textarea id="inputTxt" spellcheck="false"
                           placeholder="Co se má přeložit?" autofocus></textarea>
             </section>
 
             <section class="panel">
                 <div class="panel__hlava">
-                    <label class="panel__popisek" for="outputTxt">Výstup</label>
+                    <span class="panel__popisek" id="vystupPopisek">Výstup</span>
                     <span id="smer" class="odznak">Text → Morseovka</span>
                 </div>
-                <textarea id="outputTxt" rows="6" readonly
-                          class="je-morse"
-                          placeholder="…tady se objeví překlad"></textarea>
+                <div id="outputTxt" class="vystup je-morse" tabindex="0"
+                     role="textbox" aria-readonly="true"
+                     aria-labelledby="vystupPopisek"
+                     data-prazdny="…tady se objeví překlad"></div>
             </section>
         </div>
 

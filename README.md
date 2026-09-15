@@ -10,7 +10,8 @@ závislosti ani build — stačí otevřít `index.html` v prohlížeči.
   `ch` je jeden morseovkový znak (`----`).
 - **Čísla a interpunkci** — `.` `,` `?` `!` `:` `-` `/` `@` a další.
 - **Živý překlad** při psaní, plus tlačítka Přelož, Prohodit, Kopírovat a Reset.
-- **Pípání** — tlačítko Přehrát vyťuká morseovku tónem, ve třech tempech.
+- **Pípání** — tlačítko Přehrát vyťuká morseovku tónem, ve třech tempech,
+  a zvýrazňuje písmeno, které zrovna hraje.
 - **Přehled abecedy** — rozbalovací tabulka, staví se ze stejného slovníku
   jako překlad, takže nemůže zastarat.
 
@@ -24,6 +25,11 @@ slov za minutu) dává tečku 92 ms.
 
 Přehrává se vždy ta strana, na které je morseovka: při překladu do morseovky
 výstup, při překladu zpátky vstup.
+
+Písmeno, které právě hraje, se ve výstupu zvýrazní. Při překladu do morseovky
+se tak rozsvěcí jednotlivé kódy, při překladu zpátky rovnou přeložená písmena.
+Výstup proto není `<textarea>`, ale `div` se `span`em na každé písmeno — v
+textarey se jednotlivé znaky obarvit nedají.
 
 ## Zápis morseovky
 
@@ -44,6 +50,7 @@ Znaky, které ve slovníku nejsou, se přeskočí a aplikace na ně upozorní.
 | `style.css` | vzhled |
 | `script.js` | slovník a překlad |
 | `assets/kolaz.webp` | koláž na pozadí |
+| `assets/favicon.svg` | ikona do panelu karet |
 
 ### Výměna pozadí
 

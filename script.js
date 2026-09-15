@@ -90,6 +90,15 @@ function sjednotZnaky(text) {
         .replace(/ /g, " ");
 }
 
+// Slova odděluje lomítko, značky mezera. Dělí se tu stejně pro překlad
+// i pro pípání, aby n-tá značka odpovídala n-té jednotce ve výstupu.
+function rozdelSlova(kod) {
+    return sjednotZnaky(kod)
+        .split("/")
+        .map((slovo) => slovo.split(/\s+/).filter(Boolean))
+        .filter((znacky) => znacky.length > 0);
+}
+
 function vypadaJakoMorse(text) {
     const t = sjednotZnaky(text).trim();
     return t !== "" && /^[.\-/\s]+$/.test(t) && /[.\-]/.test(t);
@@ -97,11 +106,16 @@ function vypadaJakoMorse(text) {
 
 // ---------------------------------------------------------------- překlad
 
+// Překlad vrací seznam částí, ne jen text: každá "jednotka" je jedno písmeno
+// a při pípání se dá zvýraznit. "oddělovač" je mezera mezi nimi.
+const spojCasti = (casti) => casti.map((c) => c.jednotka ?? c.oddelovac).join("");
+
 function naMorse(text) {
     const vstup = bezDiakritiky(text.toLowerCase());
     const preskocene = new Set();
+    const casti = [];
 
-    const slova = vstup.split(/\s+/).filter(Boolean).map((slovo) => {
+    vstup.split(/\s+/).filter(Boolean).forEach((slovo) => {
         const kody = [];
 
         for (let i = 0; i < slovo.length; i++) {
@@ -121,30 +135,36 @@ function naMorse(text) {
             }
         }
 
-        return kody.join(ODDELOVAC_PISMEN);
-    }).filter(Boolean);
+        if (kody.length === 0) return;
+        if (casti.length > 0) casti.push({ oddelovac: ODDELOVAC_SLOV });
 
-    return {
-        text: slova.join(ODDELOVAC_SLOV),
-        preskocene: [...preskocene]
-    };
+        kody.forEach((kod, ik) => {
+            if (ik > 0) casti.push({ oddelovac: ODDELOVAC_PISMEN });
+            casti.push({ jednotka: kod });
+        });
+    });
+
+    return { casti, text: spojCasti(casti), preskocene: [...preskocene] };
 }
 
 function zMorse(kod) {
     const preskocene = new Set();
+    const casti = [];
 
-    const slova = sjednotZnaky(kod).split("/").map((slovo) => {
-        return slovo.split(/\s+/).filter(Boolean).map((znak) => {
-            if (znak in ZPET) return ZPET[znak];
-            preskocene.add(znak);
-            return "␣"; // ␣ – sem se nepodařilo nic přeložit
-        }).join("");
-    }).filter(Boolean);
+    rozdelSlova(kod).forEach((znacky) => {
+        if (casti.length > 0) casti.push({ oddelovac: " " });
 
-    return {
-        text: slova.join(" "),
-        preskocene: [...preskocene]
-    };
+        znacky.forEach((znacka) => {
+            if (znacka in ZPET) {
+                casti.push({ jednotka: ZPET[znacka] });
+            } else {
+                preskocene.add(znacka);
+                casti.push({ jednotka: "\u2423" }); // ␣ – tohle se přeložit nepodařilo
+            }
+        });
+    });
+
+    return { casti, text: spojCasti(casti), preskocene: [...preskocene] };
 }
 
 // ---------------------------------------------------------------- pípání
@@ -159,18 +179,19 @@ const NABEH = 0.005; // krátký náběh a doznění, jinak to v reproduktoru lu
 let zvuk = null;   // AudioContext se vyrábí až při prvním kliknutí
 let hraje = null;  // { osc, gain } když zrovna běží přehrávání
 
-// Rozpadne morseovku na seznam [začátek, délka] v sekundách.
+// Rozpadne morseovku na seznam [začátek, délka] v sekundách. Vedle toho vrací
+// hranice jednotlivých písmen — podle nich se při přehrávání zvýrazňuje.
 function casovani(kod, dil) {
     const udalosti = [];
+    const pismena = [];
     let t = 0;
 
-    const slova = sjednotZnaky(kod).split("/").filter((s) => s.trim() !== "");
-
-    slova.forEach((slovo, is) => {
+    rozdelSlova(kod).forEach((znacky, is) => {
         if (is > 0) t += 7 * dil;
 
-        slovo.split(/\s+/).filter(Boolean).forEach((pismeno, ip) => {
+        znacky.forEach((pismeno, ip) => {
             if (ip > 0) t += 3 * dil;
+            const od = t;
 
             [...pismeno].forEach((znacka, iz) => {
                 if (znacka !== "." && znacka !== "-") return;
@@ -180,10 +201,12 @@ function casovani(kod, dil) {
                 udalosti.push([t, delka]);
                 t += delka;
             });
+
+            pismena.push({ od, do: t });
         });
     });
 
-    return { udalosti, celkem: t };
+    return { udalosti, pismena, celkem: t };
 }
 
 // Naplánuje na hlasitostní bránu obálku každé značky. Bez náběhu a doznění
@@ -202,11 +225,13 @@ function naplanujPipani(gain, start, udalosti) {
 // Přehrává se ta strana, na které je morseovka — podle směru překladu.
 function morseKPrehrani() {
     if (inputTxt.value.trim() === "") return "";
-    return vypadaJakoMorse(inputTxt.value) ? sjednotZnaky(inputTxt.value) : outputTxt.value;
+    return vypadaJakoMorse(inputTxt.value) ? sjednotZnaky(inputTxt.value) : outputTxt.textContent;
 }
 
 function zastavPipani() {
     if (!hraje) return;
+
+    cancelAnimationFrame(hraje.snimek);
 
     try {
         hraje.gain.gain.cancelScheduledValues(zvuk.currentTime);
@@ -218,8 +243,40 @@ function zastavPipani() {
     }
 
     hraje = null;
+    zvyrazni(null);
     prehraj.textContent = "Přehrát";
     prehraj.classList.remove("btn--hraje");
+}
+
+// Které písmeno se v čase t hraje. Zvýraznění na něm zůstane i v mezeře za
+// ním, ať to mezi písmeny neproblikává. Před prvním písmenem vrací null.
+// Hledá se od posledního nálezu, protože čas jde jen dopředu.
+function kterePismeno(pismena, t, odIndexu = 0) {
+    if (pismena.length === 0 || t < pismena[0].od) return null;
+
+    let i = Math.max(0, odIndexu);
+    while (i + 1 < pismena.length && t >= pismena[i + 1].od) i++;
+    return i;
+}
+
+// Zvýraznění řídí snímkový cyklus podle hodin zvukové karty — přesnější než
+// řetěz setTimeoutů a samo se srovná, když se snímek opozdí.
+function sledujPrehravani(start, pismena) {
+    let i = 0;
+
+    function krok() {
+        if (!hraje) return;
+
+        const kde = kterePismeno(pismena, zvuk.currentTime - start, i);
+        if (kde !== null) {
+            i = kde;
+            zvyrazni(i);
+        }
+
+        hraje.snimek = requestAnimationFrame(krok);
+    }
+
+    hraje.snimek = requestAnimationFrame(krok);
 }
 
 async function pipat() {
@@ -243,7 +300,7 @@ async function pipat() {
     if (zvuk.state === "suspended") await zvuk.resume();
 
     const dil = 1.2 / Number(rychlost.value); // 1200 ms / WPM, v sekundách
-    const { udalosti, celkem } = casovani(kod, dil);
+    const { udalosti, pismena, celkem } = casovani(kod, dil);
     if (udalosti.length === 0) return;
 
     const osc = zvuk.createOscillator();
@@ -261,9 +318,10 @@ async function pipat() {
     osc.stop(start + celkem + 0.05);
     osc.onended = zastavPipani;
 
-    hraje = { osc, gain };
+    hraje = { osc, gain, snimek: 0 };
     prehraj.textContent = "Zastavit";
     prehraj.classList.add("btn--hraje");
+    sledujPrehravani(start, pismena);
 }
 
 // ---------------------------------------------------------------- aplikace
@@ -280,21 +338,71 @@ const prehraj = document.querySelector("#playButton");
 const rychlost = document.querySelector("#rychlost");
 const tabulka = document.querySelector("#tabulka");
 
+// Výstup je div se spanem na každé písmeno — v textarey se jednotlivé znaky
+// obarvit nedají a při pípání potřebujeme zvýraznit to, co zrovna hraje.
+let spanyJednotek = [];
+let zvyraznene = null;
+
+function vykresliVystup(casti, jeMorse) {
+    outputTxt.textContent = "";
+    spanyJednotek = [];
+    zvyraznene = null;
+
+    for (const cast of casti) {
+        if (cast.oddelovac !== undefined) {
+            outputTxt.append(cast.oddelovac);
+            continue;
+        }
+
+        const span = document.createElement("span");
+        span.className = "jednotka";
+        span.textContent = cast.jednotka;
+        outputTxt.append(span);
+        spanyJednotek.push(span);
+    }
+
+    outputTxt.classList.toggle("je-morse", jeMorse);
+}
+
+function zvyrazni(index) {
+    if (zvyraznene === index) return;
+
+    if (spanyJednotek[zvyraznene]) {
+        spanyJednotek[zvyraznene].classList.remove("jednotka--hraje");
+    }
+
+    zvyraznene = index;
+    const span = spanyJednotek[index];
+    if (!span) return;
+
+    span.classList.add("jednotka--hraje");
+
+    // u delšího textu odroluj tak, aby zvýrazněné písmeno bylo vidět
+    const nad = span.offsetTop < outputTxt.scrollTop;
+    const pod = span.offsetTop + span.offsetHeight > outputTxt.scrollTop + outputTxt.clientHeight;
+    if (nad || pod) {
+        outputTxt.scrollTop = span.offsetTop - outputTxt.clientHeight / 2;
+    }
+}
+
 function prelozit() {
     const vstup = inputTxt.value;
+    const doTextu = vypadaJakoMorse(vstup);
+
+    inputTxt.classList.toggle("je-morse", doTextu);
 
     if (vstup.trim() === "") {
-        outputTxt.value = "";
+        vykresliVystup([], false);
         smer.textContent = "Text → Morseovka";
         hlaska.textContent = "";
+        hlaska.classList.remove("hlaska--varovani");
         prehraj.disabled = true;
         return;
     }
 
-    const doTextu = vypadaJakoMorse(vstup);
     const vysledek = doTextu ? zMorse(vstup) : naMorse(vstup);
 
-    outputTxt.value = vysledek.text;
+    vykresliVystup(vysledek.casti, !doTextu);
     smer.textContent = doTextu ? "Morseovka → Text" : "Text → Morseovka";
     prehraj.disabled = morseKPrehrani().trim() === "";
 
@@ -311,7 +419,7 @@ function prelozit() {
 }
 
 function prohodit() {
-    const puvodniVystup = outputTxt.value;
+    const puvodniVystup = outputTxt.textContent;
     if (puvodniVystup === "") return;
 
     zastavPipani();
@@ -321,15 +429,19 @@ function prohodit() {
 }
 
 async function kopirovat() {
-    if (outputTxt.value === "") return;
+    if (outputTxt.textContent === "") return;
 
     try {
-        await navigator.clipboard.writeText(outputTxt.value);
+        await navigator.clipboard.writeText(outputTxt.textContent);
         oznam("Zkopírováno do schránky.");
     } catch {
-        // clipboard API nefunguje přes file:// ani bez HTTPS – vybereme text,
+        // clipboard API nefunguje přes file:// ani bez HTTPS – označíme text,
         // ať ho jde zkopírovat ručně
-        outputTxt.select();
+        const rozsah = document.createRange();
+        rozsah.selectNodeContents(outputTxt);
+        const vyber = window.getSelection();
+        vyber.removeAllRanges();
+        vyber.addRange(rozsah);
         oznam("Schránka není dostupná, text je označený – zkopíruj ho ručně.");
     }
 }
@@ -337,10 +449,7 @@ async function kopirovat() {
 function resetovat() {
     zastavPipani();
     inputTxt.value = "";
-    outputTxt.value = "";
-    smer.textContent = "Text → Morseovka";
-    hlaska.textContent = "";
-    hlaska.classList.remove("hlaska--varovani");
+    prelozit();
     inputTxt.focus();
 }
 
