@@ -195,13 +195,15 @@ textarea:focus { border-color: rgba(232, 182, 97, 0.5); }
 
 .jednotka {
     border-radius: 3px;
-    transition: background-color 0.08s linear, color 0.08s linear;
 }
 
+/* Bez přechodu a bez rozmazaného stínu: obojí nutí prohlížeč při každém
+   písmenu překreslovat i prosklené pozadí karty, a takový výkyv se na
+   pomalejším stroji ozve v přehrávaném tónu. */
 .jednotka--hraje {
     background: var(--mosaz);
     color: #1a1005;
-    box-shadow: 0 0 0 2px var(--mosaz), 0 0 16px rgba(232, 182, 97, 0.45);
+    box-shadow: 0 0 0 2px var(--mosaz);
 }
 
 /* ------------------------------------------------------------- hláška */

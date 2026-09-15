@@ -174,7 +174,22 @@ function zMorse(kod) {
 // v milisekundách je 1200 / (slov za minutu).
 const TON_HZ = 600;
 const HLASITOST = 0.22;
-const NABEH = 0.005; // krátký náběh a doznění, jinak to v reproduktoru lupe
+
+// Náběh a doznění každé značky. Ostrý start tónu je slyšet jako lupnutí,
+// protože roh v obálce rozhodí energii daleko od nosné. Tvar zvednutého
+// kosinu žádný roh nemá: proti lineárnímu náběhu stejné délky má ve vzdálenosti
+// 1200 Hz od nosné asi o 25 dB méně rozstřelu. 8 ms je kompromis — delší náběh
+// je ještě čistší, ale ukrajoval by z krátké tečky.
+const NABEH = 0.008;
+const KROKU_OBALKY = 64;
+
+const NABEH_KRIVKA = new Float32Array(KROKU_OBALKY);
+const DOZNENI_KRIVKA = new Float32Array(KROKU_OBALKY);
+for (let i = 0; i < KROKU_OBALKY; i++) {
+    const x = i / (KROKU_OBALKY - 1);
+    NABEH_KRIVKA[i] = HLASITOST * 0.5 * (1 - Math.cos(Math.PI * x));
+    DOZNENI_KRIVKA[i] = HLASITOST * 0.5 * (1 + Math.cos(Math.PI * x));
+}
 
 let zvuk = null;   // AudioContext se vyrábí až při prvním kliknutí
 let hraje = null;  // { osc, gain } když zrovna běží přehrávání
@@ -209,16 +224,18 @@ function casovani(kod, dil) {
     return { udalosti, pismena, celkem: t };
 }
 
-// Naplánuje na hlasitostní bránu obálku každé značky. Bez náběhu a doznění
-// by přechody lupaly.
+// Naplánuje na hlasitostní bránu obálku každé značky. U krátké značky se
+// náběh zkrátí, aby na plnou hlasitost stihla dojít a nezněla tišeji než
+// ostatní — proto ta čtvrtina délky.
 function naplanujPipani(gain, start, udalosti) {
     for (const [kdy, delka] of udalosti) {
+        const nabeh = Math.min(NABEH, delka / 4);
         const od = start + kdy;
-        const konec = od + delka;
+
         gain.gain.setValueAtTime(0, od);
-        gain.gain.linearRampToValueAtTime(HLASITOST, od + NABEH);
-        gain.gain.setValueAtTime(HLASITOST, konec - NABEH);
-        gain.gain.linearRampToValueAtTime(0, konec);
+        gain.gain.setValueCurveAtTime(NABEH_KRIVKA, od, nabeh);
+        // mezi křivkami brána sama drží poslední hodnotu, tedy plnou hlasitost
+        gain.gain.setValueCurveAtTime(DOZNENI_KRIVKA, od + delka - nabeh, nabeh);
     }
 }
 
@@ -311,7 +328,7 @@ async function pipat() {
     osc.connect(gain);
     gain.connect(zvuk.destination);
 
-    const start = zvuk.currentTime + 0.08;
+    const start = zvuk.currentTime + 0.12;
     naplanujPipani(gain, start, udalosti);
 
     osc.start(start);

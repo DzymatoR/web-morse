@@ -26,6 +26,13 @@ slov za minutu) dává tečku 92 ms.
 Přehrává se vždy ta strana, na které je morseovka: při překladu do morseovky
 výstup, při překladu zpátky vstup.
 
+Každá značka má náběh a doznění tvarované zvednutým kosinem, 8 ms. Ostrý
+začátek tónu je slyšet jako lupnutí — roh v obálce rozhodí energii daleko od
+nosné, telegrafisté tomu říkají key clicks. Proti lineárnímu náběhu stejné
+délky má kosinus ve vzdálenosti 1200 Hz od nosné asi o 25 dB méně rozstřelu.
+U hodně krátké značky se náběh zkrátí na čtvrtinu její délky, aby stihla dojít
+na plnou hlasitost a nezněla tišeji než ostatní.
+
 Písmeno, které právě hraje, se ve výstupu zvýrazní. Při překladu do morseovky
 se tak rozsvěcí jednotlivé kódy, při překladu zpátky rovnou přeložená písmena.
 Výstup proto není `<textarea>`, ale `div` se `span`em na každé písmeno — v
