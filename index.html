@@ -39,9 +39,19 @@
 
         <div class="tlacitka">
             <button type="button" id="translateButton" class="btn btn--hlavni">Přelož</button>
+            <button type="button" id="playButton" class="btn" disabled>Přehrát</button>
             <button type="button" id="swapButton" class="btn">Prohodit</button>
             <button type="button" id="copyButton" class="btn">Kopírovat</button>
             <button type="button" id="resetButton" class="btn btn--tichy">Reset</button>
+
+            <label class="tempo">
+                Tempo
+                <select id="rychlost">
+                    <option value="8">pomalu</option>
+                    <option value="13" selected>normálně</option>
+                    <option value="20">rychle</option>
+                </select>
+            </label>
         </div>
 
         <details class="prehled">

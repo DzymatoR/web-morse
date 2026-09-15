@@ -10,8 +10,20 @@ závislosti ani build — stačí otevřít `index.html` v prohlížeči.
   `ch` je jeden morseovkový znak (`----`).
 - **Čísla a interpunkci** — `.` `,` `?` `!` `:` `-` `/` `@` a další.
 - **Živý překlad** při psaní, plus tlačítka Přelož, Prohodit, Kopírovat a Reset.
+- **Pípání** — tlačítko Přehrát vyťuká morseovku tónem, ve třech tempech.
 - **Přehled abecedy** — rozbalovací tabulka, staví se ze stejného slovníku
   jako překlad, takže nemůže zastarat.
+
+## Pípání
+
+Přehrává se přes Web Audio, takže není potřeba žádný zvukový soubor. Délky
+drží standard: tečka je jeden díl, čárka tři, mezera mezi značkami v písmenu
+jeden díl, mezi písmeny tři a mezi slovy sedm. Délka dílu vychází z tempa —
+je to `1200 / počet slov za minutu` v milisekundách, takže „normálně" (13
+slov za minutu) dává tečku 92 ms.
+
+Přehrává se vždy ta strana, na které je morseovka: při překladu do morseovky
+výstup, při překladu zpátky vstup.
 
 ## Zápis morseovky
 

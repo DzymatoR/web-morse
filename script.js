@@ -147,6 +147,125 @@ function zMorse(kod) {
     };
 }
 
+// ---------------------------------------------------------------- pípání
+
+// Délky podle standardu: tečka 1 díl, čárka 3 díly, mezera mezi značkami
+// v písmenu 1 díl, mezi písmeny 3 díly, mezi slovy 7 dílů. Délka dílu
+// v milisekundách je 1200 / (slov za minutu).
+const TON_HZ = 600;
+const HLASITOST = 0.22;
+const NABEH = 0.005; // krátký náběh a doznění, jinak to v reproduktoru lupe
+
+let zvuk = null;   // AudioContext se vyrábí až při prvním kliknutí
+let hraje = null;  // { osc, gain } když zrovna běží přehrávání
+
+// Rozpadne morseovku na seznam [začátek, délka] v sekundách.
+function casovani(kod, dil) {
+    const udalosti = [];
+    let t = 0;
+
+    const slova = sjednotZnaky(kod).split("/").filter((s) => s.trim() !== "");
+
+    slova.forEach((slovo, is) => {
+        if (is > 0) t += 7 * dil;
+
+        slovo.split(/\s+/).filter(Boolean).forEach((pismeno, ip) => {
+            if (ip > 0) t += 3 * dil;
+
+            [...pismeno].forEach((znacka, iz) => {
+                if (znacka !== "." && znacka !== "-") return;
+                if (iz > 0) t += dil;
+
+                const delka = (znacka === "-" ? 3 : 1) * dil;
+                udalosti.push([t, delka]);
+                t += delka;
+            });
+        });
+    });
+
+    return { udalosti, celkem: t };
+}
+
+// Naplánuje na hlasitostní bránu obálku každé značky. Bez náběhu a doznění
+// by přechody lupaly.
+function naplanujPipani(gain, start, udalosti) {
+    for (const [kdy, delka] of udalosti) {
+        const od = start + kdy;
+        const konec = od + delka;
+        gain.gain.setValueAtTime(0, od);
+        gain.gain.linearRampToValueAtTime(HLASITOST, od + NABEH);
+        gain.gain.setValueAtTime(HLASITOST, konec - NABEH);
+        gain.gain.linearRampToValueAtTime(0, konec);
+    }
+}
+
+// Přehrává se ta strana, na které je morseovka — podle směru překladu.
+function morseKPrehrani() {
+    if (inputTxt.value.trim() === "") return "";
+    return vypadaJakoMorse(inputTxt.value) ? sjednotZnaky(inputTxt.value) : outputTxt.value;
+}
+
+function zastavPipani() {
+    if (!hraje) return;
+
+    try {
+        hraje.gain.gain.cancelScheduledValues(zvuk.currentTime);
+        hraje.gain.gain.setValueAtTime(0, zvuk.currentTime);
+        hraje.osc.onended = null;
+        hraje.osc.stop();
+    } catch {
+        // oscilátor už mohl doběhnout sám, to nevadí
+    }
+
+    hraje = null;
+    prehraj.textContent = "Přehrát";
+    prehraj.classList.remove("btn--hraje");
+}
+
+async function pipat() {
+    if (hraje) {
+        zastavPipani();
+        return;
+    }
+
+    const kod = morseKPrehrani();
+    if (kod.trim() === "") return;
+
+    if (!zvuk) {
+        const Zvuk = window.AudioContext || window.webkitAudioContext;
+        if (!Zvuk) {
+            oznam("Tvůj prohlížeč neumí Web Audio, pípání nepůjde.");
+            return;
+        }
+        zvuk = new Zvuk();
+    }
+    // prohlížeče kontext uspávají, dokud uživatel na něco neklikne
+    if (zvuk.state === "suspended") await zvuk.resume();
+
+    const dil = 1.2 / Number(rychlost.value); // 1200 ms / WPM, v sekundách
+    const { udalosti, celkem } = casovani(kod, dil);
+    if (udalosti.length === 0) return;
+
+    const osc = zvuk.createOscillator();
+    const gain = zvuk.createGain();
+    osc.type = "sine";
+    osc.frequency.value = TON_HZ;
+    gain.gain.value = 0;
+    osc.connect(gain);
+    gain.connect(zvuk.destination);
+
+    const start = zvuk.currentTime + 0.08;
+    naplanujPipani(gain, start, udalosti);
+
+    osc.start(start);
+    osc.stop(start + celkem + 0.05);
+    osc.onended = zastavPipani;
+
+    hraje = { osc, gain };
+    prehraj.textContent = "Zastavit";
+    prehraj.classList.add("btn--hraje");
+}
+
 // ---------------------------------------------------------------- aplikace
 
 const inputTxt = document.querySelector("#inputTxt");
@@ -157,6 +276,8 @@ const preloz = document.querySelector("#translateButton");
 const prohod = document.querySelector("#swapButton");
 const kopiruj = document.querySelector("#copyButton");
 const reset = document.querySelector("#resetButton");
+const prehraj = document.querySelector("#playButton");
+const rychlost = document.querySelector("#rychlost");
 const tabulka = document.querySelector("#tabulka");
 
 function prelozit() {
@@ -166,6 +287,7 @@ function prelozit() {
         outputTxt.value = "";
         smer.textContent = "Text → Morseovka";
         hlaska.textContent = "";
+        prehraj.disabled = true;
         return;
     }
 
@@ -174,6 +296,7 @@ function prelozit() {
 
     outputTxt.value = vysledek.text;
     smer.textContent = doTextu ? "Morseovka → Text" : "Text → Morseovka";
+    prehraj.disabled = morseKPrehrani().trim() === "";
 
     if (vysledek.preskocene.length === 0) {
         hlaska.textContent = "";
@@ -191,6 +314,7 @@ function prohodit() {
     const puvodniVystup = outputTxt.value;
     if (puvodniVystup === "") return;
 
+    zastavPipani();
     inputTxt.value = puvodniVystup;
     prelozit();
     inputTxt.focus();
@@ -211,6 +335,7 @@ async function kopirovat() {
 }
 
 function resetovat() {
+    zastavPipani();
     inputTxt.value = "";
     outputTxt.value = "";
     smer.textContent = "Text → Morseovka";
@@ -249,10 +374,15 @@ function vypisTabulku() {
 }
 
 preloz.addEventListener("click", prelozit);
+prehraj.addEventListener("click", pipat);
 prohod.addEventListener("click", prohodit);
 kopiruj.addEventListener("click", kopirovat);
 reset.addEventListener("click", resetovat);
-inputTxt.addEventListener("input", prelozit);
+inputTxt.addEventListener("input", () => {
+    zastavPipani(); // morseovka se právě změnila, staré pípání už neplatí
+    prelozit();
+});
+rychlost.addEventListener("change", zastavPipani);
 
 vypisTabulku();
 prelozit();
