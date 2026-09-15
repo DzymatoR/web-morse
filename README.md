@@ -31,7 +31,7 @@ Znaky, které ve slovníku nejsou, se přeskočí a aplikace na ně upozorní.
 | `index.html` | struktura stránky |
 | `style.css` | vzhled |
 | `script.js` | slovník a překlad |
-| `assets/collage.svg` | koláž na pozadí |
+| `assets/kolaz.webp` | koláž na pozadí |
 
 ### Výměna pozadí
 

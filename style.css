@@ -3,7 +3,7 @@
 :root {
     /* Koláž na pozadí. Chceš-li vlastní obrázek, stačí přepsat tenhle řádek
        (např. url("assets/kolaz.jpg")) — zbytek stylu se přizpůsobí sám. */
-    --kolaz: url("assets/collage.svg");
+    --kolaz: url("assets/kolaz.webp");
     --kolaz-sytost: 0.55;
 
     --pozadi: #0a1420;
@@ -297,6 +297,10 @@ summary:hover { color: var(--mosaz); }
 @media (max-width: 640px) {
     .panely { grid-template-columns: 1fr; }
     .btn { flex: 1 1 auto; }
+
+    /* Koláž má záměrně prázdný střed, aby na ní šla číst karta. Na úzkém
+       displeji by ale výřez na střed padl celý — posuneme ho k motivům. */
+    body::before { background-position: 15% center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
