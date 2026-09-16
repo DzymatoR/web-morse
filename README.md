@@ -71,6 +71,19 @@ Znaky, které ve slovníku nejsou, se přeskočí a aplikace na ně upozorní.
 | `script.js` | slovník a překlad |
 | `assets/kolaz.webp` | koláž na pozadí |
 | `assets/favicon.svg` | ikona do panelu karet |
+| `testy/` | testy překladu, zvuku a rozhraní |
+
+Proč je co udělané tak, jak je, a co zůstává otevřené, je v
+[POZNAMKY.md](POZNAMKY.md).
+
+## Testy
+
+```
+node testy/prekladac.test.js
+```
+
+Prohlížečové testy potřebují Playwright a běžící server, návod je v hlavičce
+souboru `testy/prohlizec.test.js`.
 
 ### Výměna pozadí
 
