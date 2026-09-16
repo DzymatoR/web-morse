@@ -173,7 +173,7 @@ function zMorse(kod) {
 // v písmenu 1 díl, mezi písmeny 3 díly, mezi slovy 7 dílů. Délka dílu
 // v milisekundách je 1200 / (slov za minutu).
 const TON_HZ = 600;
-const HLASITOST = 0.22;
+const HLASITOST = 0.4;
 
 // Náběh a doznění každé značky. Ostrý start tónu je slyšet jako lupnutí,
 // protože roh v obálce rozhodí energii daleko od nosné. Tvar zvednutého
