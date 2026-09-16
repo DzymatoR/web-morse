@@ -417,6 +417,49 @@ function zvyrazni(index) {
     }
 }
 
+// Tempo a hlasitost přežijí zavření stránky. Ukládá se do localStorage, tedy
+// jen do prohlížeče na tomhle počítači — nikam se nic neposílá.
+//
+// K localStorage se ale nemusí jít dostat vůbec: v soukromém okně, při
+// zakázaných datech webu nebo ve vloženém rámu vyhodí výjimku už samotný
+// přístup. Nastavení je pohodlí, ne nutnost, takže se v takovém případě
+// mlčky jede dál s výchozími hodnotami.
+const ULOZISTE_KLIC = "web-morse:nastaveni";
+
+function nactiNastaveni() {
+    let ulozene;
+    try {
+        ulozene = JSON.parse(localStorage.getItem(ULOZISTE_KLIC) || "null");
+    } catch {
+        return; // zakázané úložiště nebo poškozený obsah
+    }
+
+    if (!ulozene || typeof ulozene !== "object") return;
+
+    // Uložené hodnoty se ověřují proti tomu, co ovládací prvky doopravdy
+    // nabízejí — v úložišti může být cokoliv, i z nějaké starší verze.
+    const tempa = [...rychlost.options].map((moznost) => moznost.value);
+    if (tempa.includes(String(ulozene.tempo))) {
+        rychlost.value = String(ulozene.tempo);
+    }
+
+    const hlasitost = Number(ulozene.hlasitost);
+    if (Number.isFinite(hlasitost) && hlasitost >= 0 && hlasitost <= 100) {
+        posuvnik.value = String(hlasitost);
+    }
+}
+
+function ulozNastaveni() {
+    try {
+        localStorage.setItem(ULOZISTE_KLIC, JSON.stringify({
+            tempo: rychlost.value,
+            hlasitost: Number(posuvnik.value)
+        }));
+    } catch {
+        // nevadí, nastavení jen nepřežije zavření stránky
+    }
+}
+
 function hlasitostPodil() {
     return Number(posuvnik.value) / 100;
 }
@@ -537,9 +580,16 @@ inputTxt.addEventListener("input", () => {
     zastavPipani(); // morseovka se právě změnila, staré pípání už neplatí
     prelozit();
 });
-rychlost.addEventListener("change", zastavPipani);
+rychlost.addEventListener("change", () => {
+    zastavPipani();
+    ulozNastaveni();
+});
 posuvnik.addEventListener("input", nastavHlasitost);
+// Ukládá se až po puštění posuvníku, ne při každém pohybu — zápis do
+// localStorage je synchronní a během tažení by se dělal desetkrát za vteřinu.
+posuvnik.addEventListener("change", ulozNastaveni);
 
 vypisTabulku();
+nactiNastaveni();
 nastavHlasitost();
 prelozit();

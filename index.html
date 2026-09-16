@@ -44,15 +44,16 @@
 
         <div class="tlacitka">
             <button type="button" id="translateButton" class="btn btn--hlavni">Přelož</button>
-            <button type="button" id="playButton" class="btn" disabled>Přehrát</button>
             <button type="button" id="swapButton" class="btn">Prohodit</button>
             <button type="button" id="copyButton" class="btn">Kopírovat</button>
             <button type="button" id="resetButton" class="btn btn--tichy">Reset</button>
         </div>
 
-        <div class="nastaveni">
-            <label class="nastaveni__polozka">
-                <span class="nastaveni__popisek">Tempo</span>
+        <div class="prehravani">
+            <button type="button" id="playButton" class="btn" disabled>Přehrát</button>
+
+            <label class="prehravani__polozka">
+                <span class="prehravani__popisek">Tempo</span>
                 <select id="rychlost">
                     <option value="8">pomalu</option>
                     <option value="13" selected>normálně</option>
@@ -60,10 +61,10 @@
                 </select>
             </label>
 
-            <label class="nastaveni__polozka">
-                <span class="nastaveni__popisek">Hlasitost</span>
+            <label class="prehravani__polozka">
+                <span class="prehravani__popisek">Hlasitost</span>
                 <input type="range" id="hlasitost" min="0" max="100" step="5" value="40">
-                <output id="hlasitostHodnota" class="nastaveni__hodnota">40 %</output>
+                <output id="hlasitostHodnota" class="prehravani__hodnota">40 %</output>
             </label>
         </div>
 

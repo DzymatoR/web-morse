@@ -26,6 +26,14 @@ slov za minutu) dává tečku 92 ms.
 Přehrává se vždy ta strana, na které je morseovka: při překladu do morseovky
 výstup, při překladu zpátky vstup.
 
+Tempo a hlasitost si aplikace pamatuje. Ukládá je do `localStorage`, tedy jen
+do prohlížeče na tomhle počítači — aplikace nemá server a nikam nic neposílá.
+K úložišti se ale nemusí jít dostat vůbec (soukromé okno, zakázaná data webu,
+vložený rám), a tam vyhodí výjimku už samotný přístup k němu. Každé sáhnutí je
+proto v `try`/`catch` a když to nejde, jede se dál s výchozími hodnotami.
+Načtené hodnoty se navíc ověřují proti tomu, co ovládací prvky nabízejí — v
+úložišti může být cokoliv, třeba z nějaké starší verze.
+
 Hlasitost jde měnit i uprostřed přehrávání. Řetězec je proto rozdělený na
 dva uzly: první klíčuje jednotlivé značky obálkou, druhý drží hlasitost.
 Posuvník sahá jen na ten druhý, takže se obálky nedotkne. Nová hodnota se

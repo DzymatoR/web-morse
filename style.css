@@ -277,22 +277,24 @@ textarea:focus { border-color: rgba(232, 182, 97, 0.5); }
 .btn--tichy { border-color: rgba(147, 167, 186, 0.28); color: var(--seda); }
 .btn--tichy:hover { background: rgba(147, 167, 186, 0.12); border-color: var(--seda); }
 
-.nastaveni {
+/* Přehrávání pohromadě: tlačítko i obě jeho nastavení v jedné řadě. */
+.prehravani {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 14px 28px;
+    gap: 14px 24px;
     margin-top: 18px;
     padding-top: 16px;
     border-top: 1px solid rgba(232, 182, 97, 0.12);
 }
 
-.nastaveni__polozka {
+.prehravani__polozka {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.nastaveni__popisek {
+.prehravani__popisek {
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -300,7 +302,7 @@ textarea:focus { border-color: rgba(232, 182, 97, 0.5); }
     color: var(--mosaz-tlumena);
 }
 
-.nastaveni select {
+.prehravani select {
     padding: 8px 10px;
     border-radius: 8px;
     border: 1px solid rgba(232, 182, 97, 0.28);
@@ -311,21 +313,21 @@ textarea:focus { border-color: rgba(232, 182, 97, 0.5); }
     cursor: pointer;
 }
 
-.nastaveni input[type="range"] {
+.prehravani input[type="range"] {
     width: 140px;
     accent-color: var(--mosaz);
     cursor: pointer;
 }
 
-.nastaveni__hodnota {
+.prehravani__hodnota {
     min-width: 5ch;
     font-family: var(--mono);
     font-size: 13px;
     color: var(--seda);
 }
 
-.nastaveni select:focus-visible,
-.nastaveni input[type="range"]:focus-visible {
+.prehravani select:focus-visible,
+.prehravani input[type="range"]:focus-visible {
     outline: 2px solid var(--mosaz);
     outline-offset: 2px;
 }
@@ -402,8 +404,8 @@ summary:hover { color: var(--mosaz); }
 @media (max-width: 640px) {
     .panely { grid-template-columns: 1fr; }
     .btn { flex: 1 1 auto; }
-    .nastaveni__polozka { width: 100%; justify-content: space-between; }
-    .nastaveni input[type="range"] { flex: 1; min-width: 0; margin: 0 10px; }
+    .prehravani__polozka { width: 100%; justify-content: space-between; }
+    .prehravani input[type="range"] { flex: 1; min-width: 0; margin: 0 10px; }
 
     /* Koláž má záměrně prázdný střed, aby na ní šla číst karta. Na úzkém
        displeji by ale výřez na střed padl celý — posuneme ho k motivům. */
