@@ -173,7 +173,6 @@ function zMorse(kod) {
 // v písmenu 1 díl, mezi písmeny 3 díly, mezi slovy 7 dílů. Délka dílu
 // v milisekundách je 1200 / (slov za minutu).
 const TON_HZ = 600;
-const HLASITOST = 0.4;
 
 // Náběh a doznění každé značky. Ostrý start tónu je slyšet jako lupnutí,
 // protože roh v obálce rozhodí energii daleko od nosné. Tvar zvednutého
@@ -183,12 +182,32 @@ const HLASITOST = 0.4;
 const NABEH = 0.008;
 const KROKU_OBALKY = 64;
 
+// Křivky jsou znormované na 0 až 1 — hlasitost řeší samostatný uzel za nimi,
+// aby šla měnit i uprostřed přehrávání.
 const NABEH_KRIVKA = new Float32Array(KROKU_OBALKY);
 const DOZNENI_KRIVKA = new Float32Array(KROKU_OBALKY);
 for (let i = 0; i < KROKU_OBALKY; i++) {
     const x = i / (KROKU_OBALKY - 1);
-    NABEH_KRIVKA[i] = HLASITOST * 0.5 * (1 - Math.cos(Math.PI * x));
-    DOZNENI_KRIVKA[i] = HLASITOST * 0.5 * (1 + Math.cos(Math.PI * x));
+    NABEH_KRIVKA[i] = 0.5 * (1 - Math.cos(Math.PI * x));
+    DOZNENI_KRIVKA[i] = 0.5 * (1 + Math.cos(Math.PI * x));
+}
+
+// Oscilátor → klíčování (obálka značek) → hlasitost → výstup.
+function postavRetezec(ctx, hlasitost) {
+    const osc = ctx.createOscillator();
+    const klic = ctx.createGain();
+    const hlas = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.value = TON_HZ;
+    klic.gain.value = 0;
+    hlas.gain.value = hlasitost;
+
+    osc.connect(klic);
+    klic.connect(hlas);
+    hlas.connect(ctx.destination);
+
+    return { osc, klic, hlas };
 }
 
 let zvuk = null;   // AudioContext se vyrábí až při prvním kliknutí
@@ -234,7 +253,7 @@ function naplanujPipani(gain, start, udalosti) {
 
         gain.gain.setValueAtTime(0, od);
         gain.gain.setValueCurveAtTime(NABEH_KRIVKA, od, nabeh);
-        // mezi křivkami brána sama drží poslední hodnotu, tedy plnou hlasitost
+        // mezi křivkami brána sama drží poslední hodnotu, tedy plně otevřeno
         gain.gain.setValueCurveAtTime(DOZNENI_KRIVKA, od + delka - nabeh, nabeh);
     }
 }
@@ -251,8 +270,8 @@ function zastavPipani() {
     cancelAnimationFrame(hraje.snimek);
 
     try {
-        hraje.gain.gain.cancelScheduledValues(zvuk.currentTime);
-        hraje.gain.gain.setValueAtTime(0, zvuk.currentTime);
+        hraje.klic.gain.cancelScheduledValues(zvuk.currentTime);
+        hraje.klic.gain.setValueAtTime(0, zvuk.currentTime);
         hraje.osc.onended = null;
         hraje.osc.stop();
     } catch {
@@ -320,22 +339,16 @@ async function pipat() {
     const { udalosti, pismena, celkem } = casovani(kod, dil);
     if (udalosti.length === 0) return;
 
-    const osc = zvuk.createOscillator();
-    const gain = zvuk.createGain();
-    osc.type = "sine";
-    osc.frequency.value = TON_HZ;
-    gain.gain.value = 0;
-    osc.connect(gain);
-    gain.connect(zvuk.destination);
+    const { osc, klic, hlas } = postavRetezec(zvuk, hlasitostPodil());
 
     const start = zvuk.currentTime + 0.12;
-    naplanujPipani(gain, start, udalosti);
+    naplanujPipani(klic, start, udalosti);
 
     osc.start(start);
     osc.stop(start + celkem + 0.05);
     osc.onended = zastavPipani;
 
-    hraje = { osc, gain, snimek: 0 };
+    hraje = { osc, klic, hlas, snimek: 0 };
     prehraj.textContent = "Zastavit";
     prehraj.classList.add("btn--hraje");
     sledujPrehravani(start, pismena);
@@ -353,6 +366,8 @@ const kopiruj = document.querySelector("#copyButton");
 const reset = document.querySelector("#resetButton");
 const prehraj = document.querySelector("#playButton");
 const rychlost = document.querySelector("#rychlost");
+const posuvnik = document.querySelector("#hlasitost");
+const hlasitostText = document.querySelector("#hlasitostHodnota");
 const tabulka = document.querySelector("#tabulka");
 
 // Výstup je div se spanem na každé písmeno — v textarey se jednotlivé znaky
@@ -399,6 +414,20 @@ function zvyrazni(index) {
     const pod = span.offsetTop + span.offsetHeight > outputTxt.scrollTop + outputTxt.clientHeight;
     if (nad || pod) {
         outputTxt.scrollTop = span.offsetTop - outputTxt.clientHeight / 2;
+    }
+}
+
+function hlasitostPodil() {
+    return Number(posuvnik.value) / 100;
+}
+
+function nastavHlasitost() {
+    hlasitostText.textContent = posuvnik.value + " %";
+
+    // Za běhu se hlasitost nepřepíná skokem — skok by lupnul. Krátká časová
+    // konstanta ji dotáhne na novou hodnotu za pár desetin milisekundy.
+    if (hraje) {
+        hraje.hlas.gain.setTargetAtTime(hlasitostPodil(), zvuk.currentTime, 0.02);
     }
 }
 
@@ -509,6 +538,8 @@ inputTxt.addEventListener("input", () => {
     prelozit();
 });
 rychlost.addEventListener("change", zastavPipani);
+posuvnik.addEventListener("input", nastavHlasitost);
 
 vypisTabulku();
+nastavHlasitost();
 prelozit();

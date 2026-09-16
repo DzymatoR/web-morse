@@ -10,8 +10,8 @@ závislosti ani build — stačí otevřít `index.html` v prohlížeči.
   `ch` je jeden morseovkový znak (`----`).
 - **Čísla a interpunkci** — `.` `,` `?` `!` `:` `-` `/` `@` a další.
 - **Živý překlad** při psaní, plus tlačítka Přelož, Prohodit, Kopírovat a Reset.
-- **Pípání** — tlačítko Přehrát vyťuká morseovku tónem, ve třech tempech,
-  a zvýrazňuje písmeno, které zrovna hraje.
+- **Pípání** — tlačítko Přehrát vyťuká morseovku tónem, ve třech tempech
+  a s nastavitelnou hlasitostí, a zvýrazňuje písmeno, které zrovna hraje.
 - **Přehled abecedy** — rozbalovací tabulka, staví se ze stejného slovníku
   jako překlad, takže nemůže zastarat.
 
@@ -25,6 +25,11 @@ slov za minutu) dává tečku 92 ms.
 
 Přehrává se vždy ta strana, na které je morseovka: při překladu do morseovky
 výstup, při překladu zpátky vstup.
+
+Hlasitost jde měnit i uprostřed přehrávání. Řetězec je proto rozdělený na
+dva uzly: první klíčuje jednotlivé značky obálkou, druhý drží hlasitost.
+Posuvník sahá jen na ten druhý, takže se obálky nedotkne. Nová hodnota se
+nenasazuje skokem — skok by lupnul — ale dotáhne se za pár desetin milisekundy.
 
 Každá značka má náběh a doznění tvarované zvednutým kosinem, 8 ms. Ostrý
 začátek tónu je slyšet jako lupnutí — roh v obálce rozhodí energii daleko od
